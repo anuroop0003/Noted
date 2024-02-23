@@ -1,95 +1,33 @@
-import {
-  GoogleSignin,
-  GoogleSigninButton,
-} from '@react-native-google-signin/google-signin';
-import React, {useEffect} from 'react';
-import {
-  Alert,
-  Image,
-  SafeAreaView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  View,
-  useColorScheme,
-} from 'react-native';
+import {NavigationContainer} from '@react-navigation/native';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import {useEffect} from 'react';
+import {MMKV} from 'react-native-mmkv';
 import SplashScreen from 'react-native-splash-screen';
-import {Colors} from 'react-native/Libraries/NewAppScreen';
-import {fonts} from './src/utils/fonts';
+import Loader from './src/components/Loader/Loader';
+import Home from './src/screens/Home/Home';
+import Login from './src/screens/Login/Login';
+
+export const storage = new MMKV();
+
+const Stack = createNativeStackNavigator();
 
 function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
-
   useEffect(() => {
-    SplashScreen.hide();
+    const timer = setTimeout(() => SplashScreen.hide(), 2000);
+    return () => clearTimeout(timer);
   }, []);
-  GoogleSignin.configure();
-
-  async function handleGoogleLogin() {
-    try {
-      await GoogleSignin.hasPlayServices();
-      const userInfo = await GoogleSignin.signIn();
-      Alert.alert(JSON.stringify(userInfo));
-      await GoogleSignin.signOut();
-    } catch (error) {
-      console.log('error', error);
-    }
-  }
 
   return (
-    <SafeAreaView style={{...styles.container, ...backgroundStyle}}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <View style={styles.container}>
-        <View style={styles.imageContainer}>
-          <Text style={styles.text}>Noted</Text>
-          <Image
-            style={styles.image}
-            source={require('./src/assets/Common/logo.png')}
-          />
-        </View>
-        <View style={styles.buttonContainer}>
-          <GoogleSigninButton
-            onPress={() => handleGoogleLogin()}
-            size={GoogleSigninButton.Size.Wide}
-            color={GoogleSigninButton.Color.Dark}
-            disabled={false}
-          />
-        </View>
-      </View>
-    </SafeAreaView>
+    <>
+      <NavigationContainer>
+        <Loader />
+        <Stack.Navigator screenOptions={{headerShown: false}}>
+          <Stack.Screen name="Login" component={Login} />
+          <Stack.Screen name="Home" component={Home} />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  imageContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  image: {
-    height: 150,
-    width: 120,
-  },
-  text: {
-    marginVertical: 60,
-    fontSize: 48,
-    fontFamily: fonts.FI700,
-  },
-  buttonContainer: {
-    flex: 0.4,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-});
 
 export default App;
